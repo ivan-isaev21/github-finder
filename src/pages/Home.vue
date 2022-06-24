@@ -13,7 +13,18 @@
 
         <!-- buttons -->
         <button @click="getRepos" v-if="!repos" class="btn btnPrimary">Search!</button>    
-        <button @click="getRepos"  v-if="repos" class="btn btnPrimary">Search Again!</button>      
+        <button @click="getRepos"  v-if="repos" class="btn btnPrimary">Search Again!</button>    
+        
+        <!-- user -->
+        <div class="user__wrapper" v-if="user">         
+          <div class="user-img"> <img :src="user.avatar_url" alt="avatar" width="200" height="200"></div>
+          
+          <div class="user-body">          
+            <p v-if="user.company">Company: {{ user.company }}</p>
+            <p v-if="user.location">Location: {{ user.location }}</p>
+            <p v-if="user.bio">Bio: {{ user.bio }}</p>
+          </div>
+        </div>
 
         <!-- wrapper -->
         <div class="repos__wrapper">
@@ -39,22 +50,36 @@
     },
     data() {
       return {
+        user:null,
         search: '',
         error: null,
         repos: null
       }
     },
     methods:{
+      getUser(){
+        axios
+        .get(`https://api.github.com/users/${this.search}`)
+        .then(res => {
+          this.user = res.data
+        })
+        .catch(error => {
+          console.error(error)
+          this.user = null
+        })        
+      },
       getRepos(){
         axios
         .get(`https://api.github.com/users/${this.search}/repos`)
         .then(res => {
           this.repos = res.data 
-          this.error = null         
+          this.error = null    
+          this.getUser()    
         })
         .catch(error => {
           this.error = 'Can`t find this user'
           this.repos = null
+          this.user = null
           console.error(error)
         })
   
@@ -82,5 +107,14 @@
     margin-bottom: 10px;
     padding: 10px 0;
     border-bottom: 1px solid #dbdbdb;    
+  }
+  .user__wrapper{
+    display: flex;
+    align-items: center;
+    justify-content:space-evenly; 
+    margin: 20px 0;   
+  }
+  .user-body{
+    margin-left: 20px;
   }
 </style>
